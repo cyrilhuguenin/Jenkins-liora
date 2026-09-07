@@ -54,3 +54,27 @@
 
 ##Documentation Page
 ![ScreenShot](https://github.com/DataScientest/gitlab_devops_exams/blob/main/docs.png)
+
+## Pipeline CI/CD (Jenkins)
+
+Le Jenkinsfile est un pipeline declaratif execute sur l'agent "worker" :
+les builds ne tournent pas sur le controleur Jenkins.
+
+| Stage | Role |
+|---|---|
+| Init | calcule le tag d'image a partir du SHA court du commit |
+| Lint | flake8 dans un conteneur python:3.11-slim (non bloquant) |
+| Test | tests unittest de users en python:3.7-slim |
+| Build & push | construit les 3 images et les pousse sur DockerHub |
+| Deploy dev / qa / staging | helm upgrade --install dans chaque namespace |
+| Deploy prod | validation manuelle, branche master uniquement |
+
+Chaque environnement recoit trois releases Helm du meme chart generique
+(fastapi/), la gateway etant exposee en NodePort : 30000 (dev), 30001 (qa),
+30002 (staging), 30003 (prod).
+
+La production est restreinte par une directive when contenant "branch master"
+et l'option "beforeInput true". Cette option est indispensable : sans elle,
+Jenkins evaluerait la directive input AVANT la condition de branche, et un
+build sur une branche de travail reclamerait quand meme une approbation
+avant d'ignorer le stage.
