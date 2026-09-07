@@ -1,0 +1,36 @@
+replicaCount: 1
+
+image:
+  repository: nginx        # remplacé par le pipeline (--set image.repository)
+  tag: "latest"            # remplacé par le pipeline (--set image.tag)
+  pullPolicy: IfNotPresent
+
+# Images publiques sur DockerHub : aucun secret de pull nécessaire.
+imagePullSecrets: []
+
+# Nom des objets créés. Vaut le nom de la release si laissé vide ; le pipeline
+# le force à users / orders / gateway pour que le DNS interne corresponde aux
+# noms attendus par le code de la gateway (http://users:8000).
+fullnameOverride: ""
+
+service:
+  type: ClusterIP          # NodePort pour la gateway uniquement
+  port: 8000               # port d'écoute d'uvicorn dans le conteneur
+  nodePort: ""             # renseigné seulement quand type vaut NodePort
+
+# Variables d'environnement injectées dans le conteneur.
+# gateway/conf.py lit os.environ au démarrage : sans ces valeurs, pydantic
+# reçoit None sur un champ typé str et le pod plante immédiatement.
+env: {}
+
+# FastAPI expose toujours /openapi.json : la sonde vérifie que l'application
+# répond, pas seulement que le conteneur tourne.
+probePath: /openapi.json
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi

@@ -1,0 +1,20 @@
+version: '3.7'
+
+services:
+  gateway:
+    image: ${DOCKERHUB_USER}/skyblue-gateway:latest
+    build: ./gateway
+    env_file: ./gateway/.env
+    ports:
+      - 8001:8000
+    depends_on:
+      - users
+      - orders
+
+  users:
+    image: ${DOCKERHUB_USER}/skyblue-users:latest
+    build: ./users
+
+  orders:
+    image: ${DOCKERHUB_USER}/skyblue-orders:latest
+    build: ./orders
