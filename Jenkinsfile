@@ -45,7 +45,10 @@ def deployTo(String namespace, String nodePort) {
 }
 
 pipeline {
-    agent any
+    // Les builds s'executent sur l'agent « worker », jamais sur le controleur :
+    // bonne pratique Jenkins (isolation du controleur) et noeud d'execution
+    // deterministe d'un build a l'autre.
+    agent { label 'worker' }
 
     options {
         timestamps()
